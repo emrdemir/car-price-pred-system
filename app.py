@@ -38,19 +38,6 @@ cars_data = pd.read_csv('Data_analysis/Processed_Cardetails.csv')
 cars_data['brand_name'] = cars_data['name'].apply(lambda x: x.split(' ')[0])  # İlk kelime marka
 cars_data['model_name'] = cars_data['name'].apply(lambda x: ' '.join(x.split(' ')[1:]))  # Kalan kısım model
 
-# Opel için temsili modelleri ekleyelim
-opel_models = ['Astra 1.6', 'Corsa 1.2', 'Insignia 2.0', 'Mokka 1.4', 'Crossland X 1.5']
-opel_brand_name = 'Opel'
-
-# Opel markasını ve modellerini veri setine ekleyelim
-additional_data = pd.DataFrame({
-    'brand_name': [opel_brand_name] * len(opel_models),
-    'model_name': opel_models,
-    'brand': [999] * len(opel_models),  # Örnek bir sayısal değer
-    'model': list(range(1000, 1000 + len(opel_models)))  # Model için sayısal değerler
-})
-cars_data = pd.concat([cars_data, additional_data], ignore_index=True)
-
 # Kullanıcıdan marka seçimi
 brand_selected_name = st.selectbox('Marka Seç', cars_data['brand_name'].unique())
 
@@ -84,39 +71,35 @@ seats = st.slider('Koltuk Sayısı', 5, 10)  # Koltuk sayısı
 
 # Kullanıcı tahmin yapmak istediğinde
 if st.button("Fiyat Al!"):
-    if brand_selected_name == opel_brand_name and model_selected_name in opel_models:
-        # Eğer seçilen marka Opel ve model temsili modellerden biri ise statik fiyat göster
-        st.markdown(f'Aracınızın Tahmini Fiyatı: **450,000 ₺**')
-    else:
-        # Seçilen marka ve model isimlerini sayısal değerlere dönüştür
-        brand_selected = cars_data[cars_data['brand_name'] == brand_selected_name]['brand'].iloc[0]
-        model_selected = cars_data[(cars_data['brand_name'] == brand_selected_name) &
-                                    (cars_data['model_name'] == model_selected_name)]['model'].iloc[0]
+    # Seçilen marka ve model isimlerini sayısal değerlere dönüştür
+    brand_selected = cars_data[cars_data['brand_name'] == brand_selected_name]['brand'].iloc[0]
+    model_selected = cars_data[(cars_data['brand_name'] == brand_selected_name) &
+                                (cars_data['model_name'] == model_selected_name)]['model'].iloc[0]
 
-        # Türkçe seçimleri İngilizceye dönüştür
-        fuel_eng = fuel_map[fuel]
-        seller_type_eng = seller_type_map[seller_type]
-        transmission_eng = transmission_map[transmission]
-        owner_eng = owner_map[owner]
+    # Türkçe seçimleri İngilizceye dönüştür
+    fuel_eng = fuel_map[fuel]
+    seller_type_eng = seller_type_map[seller_type]
+    transmission_eng = transmission_map[transmission]
+    owner_eng = owner_map[owner]
 
-        # Model için giriş verilerini oluştur
-        input_data_model = pd.DataFrame(
-            [[year, km_driven, fuel_eng, seller_type_eng, transmission_eng, owner_eng, mileage, engine, max_power, seats, brand_selected, model_selected]],
-            columns=['year', 'km_driven', 'fuel', 'seller_type', 'transmission', 'owner', 'mileage', 'engine', 'max_power', 'seats', 'brand', 'model']
-        )
+    # Model için giriş verilerini oluştur
+    input_data_model = pd.DataFrame(
+        [[year, km_driven, fuel_eng, seller_type_eng, transmission_eng, owner_eng, mileage, engine, max_power, seats, brand_selected, model_selected]],
+        columns=['year', 'km_driven', 'fuel', 'seller_type', 'transmission', 'owner', 'mileage', 'engine', 'max_power', 'seats', 'brand', 'model']
+    )
 
-        # Kategorik sütunları uygun sayısal değerlere çevir
-        input_data_model['fuel'].replace(['Diesel', 'Petrol', 'LPG', 'CNG'], [1, 2, 3, 4], inplace=True)
-        input_data_model['seller_type'].replace(['Individual', 'Dealer', 'Trustmark Dealer'], [1, 2, 3], inplace=True)
-        input_data_model['transmission'].replace(['Manual', 'Automatic'], [1, 2], inplace=True)
-        input_data_model['owner'].replace(['First Owner', 'Second Owner', 'Third Owner',
-                                           'Fourth & Above Owner', 'Test Drive Car'], [1, 2, 3, 4, 5], inplace=True)
+    # Kategorik sütunları uygun sayısal değerlere çevir
+    input_data_model['fuel'].replace(['Diesel', 'Petrol', 'LPG', 'CNG'], [1, 2, 3, 4], inplace=True)
+    input_data_model['seller_type'].replace(['Individual', 'Dealer', 'Trustmark Dealer'], [1, 2, 3], inplace=True)
+    input_data_model['transmission'].replace(['Manual', 'Automatic'], [1, 2], inplace=True)
+    input_data_model['owner'].replace(['First Owner', 'Second Owner', 'Third Owner',
+                                       'Fourth & Above Owner', 'Test Drive Car'], [1, 2, 3, 4, 5], inplace=True)
 
-        # Random Forest modeliyle tahmin yap
-        car_price = rf_model.predict(input_data_model)
+    # Random Forest modeliyle tahmin yap
+    car_price = rf_model.predict(input_data_model)
 
-        # Tahmini fiyatı optimize et (34 ile çarpılarak Türk lirasına çevrilmiştir.)
-        car_price_optimized = abs((int(str(car_price[0]).split('.')[0]) // 100)*34*3)
+    # Tahmini fiyatı optimize et (34 ile çarpılarak Türk lirasına çevrilmiştir.)
+    car_price_optimized = abs((int(str(car_price[0]).split('.')[0]) // 100)*34*3)
 
-        # Tahmini fiyatı kullanıcıya göster
-        st.markdown(f'Aracınızın Tahmini Fiyatı: **{car_price_optimized} ₺**')
+    # Tahmini fiyatı kullanıcıya göster
+    st.markdown(f'Aracınızın Tahmini Fiyatı: **{car_price_optimized} ₺**')
