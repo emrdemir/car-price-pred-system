@@ -1,4 +1,5 @@
-WEBSİTE LİNKİMİZ : https://car-price-pred-system-jt4ql2h4cpqwqyndnjgkxo.streamlit.app/
+Website Linkimiz : https://car-price-pred-system-jt4ql2h4cpqwqyndnjgkxo.streamlit.app/
+Kullandığımız Veri Seti : https://www.kaggle.com/datasets/ibkya12/vehicle-price-prediction-dataset
 # Araba Fiyat Tahmin Sistemi
 
 Bu proje, kullanıcıdan alınan araç bilgilerine göre araç fiyat tahmini yapan bir Streamlit uygulamasıdır.
