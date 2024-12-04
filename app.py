@@ -3,7 +3,6 @@ import numpy as np
 import pickle as pk
 import streamlit as st
 import base64
-import shap
 
 # Function to add a background image
 def add_bg_from_local(image_path):
@@ -85,24 +84,9 @@ if st.button("Predict Price"):
             columns=['year', 'km_driven', 'fuel', 'seller_type', 'transmission', 'owner', 'mileage', 'engine', 'max_power', 'seats', 'brand', 'model']
         )
 
-        # Encode categorical features
-        encode_column(input_data_model, 'fuel', fuel_map)
-        encode_column(input_data_model, 'seller_type', seller_type_map)
-        encode_column(input_data_model, 'transmission', transmission_map)
-        encode_column(input_data_model, 'owner', owner_map)
-
         # Make prediction
         car_price = rf_model.predict(input_data_model)
-        confidence_interval = (car_price[0] * 0.95, car_price[0] * 1.05)
-
-        # Display result
         st.success(f"Estimated Price: {int(car_price[0])} ₺")
-        st.info(f"Confidence Interval: {int(confidence_interval[0])} ₺ - {int(confidence_interval[1])} ₺")
-
-        # Explain prediction with SHAP
-        explainer = shap.TreeExplainer(rf_model)
-        shap_values = explainer.shap_values(input_data_model)
-        st.pyplot(shap.summary_plot(shap_values, input_data_model))
 
     except Exception as e:
         st.error(f"Error: {e}")
